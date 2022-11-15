@@ -4,11 +4,13 @@ const config = {
 }
 
 class User {
-    constructor(name, age, days, money,items){
+    constructor(name, age, days, money, items){
         this.name = name;
         this.age = age;
         this.days = days;
         this.money = money;
+        this.clickCount = 0;
+        this.incomePerClick = 25;
         this.items = items;
     }
 }
@@ -28,6 +30,26 @@ class Items {
 
 class Model {
 
+    static updateMainPage(user){
+        user.clickCount++;
+        user.money += user.incomePerClick;
+        View.updateBurgerPage(user);
+        View.updateUserInfo(user);
+    }
+
+    static startTimer(user){
+        let days = user.days;
+        setInterval(function(){
+            days++;
+            user.days = days;
+            if(user.days % 365 == 0){
+                user.age++; 
+                View.updateUserInfo(user);
+            } else{
+                View.updateUserInfo(user);
+            }
+        },1000)
+    }
 }
 
 class View {
@@ -52,7 +74,7 @@ class View {
     }
 
     static createMainPage(user){
-        let container = config.mainPage;
+        let container = document.createElement("div");
         container.innerHTML=
         `
             <div class="vh-100 d-flex justify-content-center p-md-5 pb-5">
@@ -68,26 +90,31 @@ class View {
                 </div>
             </div>
         `
-
-        container.querySelectorAll("#burgerStatus")[0].append(View.createBugerStatus());
+        container.querySelectorAll("#burgerStatus")[0].append(View.createBugerStatus(user));
         container.querySelectorAll("#userInfo")[0].append(View.createUserInfo(user));
         container.querySelectorAll("#displayItems")[0].append(View.createItemPage(user));
 
         return container;
     }
 
-    static createBugerStatus(){
+    static createBugerStatus(user){
         let container = document.createElement("div");
         container.innerHTML =
         `
             <div class="text-center bg-navy">
-                <h5>0 Burgers</h5>
+                <h5>${user.clickCount} Burgers</h5>
                 <p>one click ¥25</p>
             </div>
             <div class="p-2 pt-5 d-flex justify-content-center">
                 <img src="https://cdn.pixabay.com/photo/2014/04/02/17/00/burger-307648_960_720.png" width=80% class="py-2 hover img-fuid" id="burger">
             </div>
         `
+
+        let burgerStatus = container.querySelectorAll("#burger")[0];
+        burgerStatus.addEventListener("click", function(){
+            Model.updateMainPage(user);
+        })
+
         return container;
     }
 
@@ -106,7 +133,7 @@ class View {
                     <p>${user.days} days</p>
                 </div>
                 <div class="text-white text-center col-12 col-sm-6 userInfoBorder">
-                    <p>¥ ${user.money}</p>
+                    <p>¥${user.money}</p>
                 </div>
             </div>
         `
@@ -138,6 +165,17 @@ class View {
         return container;
     }
 
+    static updateBurgerPage(user){
+        let burgerStatus = config.mainPage.querySelectorAll("#burgerStatus")[0];
+        burgerStatus.innerHTML='';
+        burgerStatus.append(View.createBugerStatus(user));
+    }
+
+    static updateUserInfo(user){
+        let userInfo = config.mainPage.querySelectorAll("#userInfo")[0];
+        userInfo.innerHTML='';
+        userInfo.append(View.createUserInfo(user));
+    }
 }
 
 class Controller {
@@ -175,7 +213,8 @@ class Controller {
     static moveInitialToMain(user){
         config.initialPage.classList.add("d-none");
         config.mainPage.append(View.createMainPage(user));
-    }    
+        Model.startTimer(user);
+    }
 }
 
 Controller.startGame();
