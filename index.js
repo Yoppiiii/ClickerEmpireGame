@@ -145,24 +145,64 @@ class View {
         for(let i = 0; i < user.items.length; i++){
             container.innerHTML +=
             `
-                <div class="d-sm-flex align-items-center m-1 selectItem bg-navy">
+                <div class="d-sm-flex align-items-center m-1 selectItem bg-navy" id="itemPage">
                     <div class="d-none d-sm-block p-1 col-sm-3">
                         <img  src=${user.items[i].url} class="py-2 img-fluid">
                     </div>
                     <div class="col-sm-9">
                         <div class="d-flex justify-content-between">
                             <h4>${user.items[i].name}</h4>
-                            <h4>0</h4>
+                            <h4>${user.items[i].currentAmount}</h4>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p>¥ ${user.items[i].price}</p>
-                            <p class="text-success">¥${user.items[i].perRate} /click</p>
+                            <p class="text-success">¥${View.displayItemIncome(user.items[i], user.items[i].type)}</p>
                         </div>
                     </div>        
                 </div>  
             `
+            let items = container.querySelectorAll("#itemPage");
+            for(let i = 0; i < items.length; i++){
+                items[i].addEventListener("click", function(){
+                    Controller.movePurchasePage(user, i);
+                });
+            }
         }
         return container;
+    }
+
+    static createPurchasePage(user, num){
+        let container = document.createElement("div");
+        container.innerHTML=
+        `
+        <div class="p-2 m-1 bg-navy" id="purchasePage">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4>${user.items[num].name}</h4>
+                    <p>Max purchases: ${user.items[num].maxAmount}</p>
+                    <p>Price ¥${user.items[num].price}</p>
+                    <p>Get ¥${View.displayItemIncome(user.items[num], user.items[num].type)}</p>
+                </div>
+                <div class="p-2 d-sm-block col-sm-5">
+                    <img  src=${user.items[num].url} class="py-2 img-fluid">
+                </div>
+            </div>
+            <p>How many would you like to buy?</p>
+            <input type="number" placeholder="0" class="col-12 form-control">
+            <p class="text-right" id="totalPrice">total: ¥0</p>
+            <div class="d-flex justify-content-between pb-3">
+                <button class="btn btn-outline-primary col-5 bg-light" id="back">Go Back</button>
+                <button class="btn btn-primary col-5" id="purchase">Purchase</button>
+            </div>
+        </div>
+        `
+        return container;
+    }
+
+    static displayItemIncome(item, type){
+        if(type == "ability") return item.perMoney + "/click";
+        else if(type == "investment") return item.perRate + "/sec";
+        else return item.perMoney + "/sec";
     }
 
     static updateBurgerPage(user){
@@ -214,6 +254,11 @@ class Controller {
         config.initialPage.classList.add("d-none");
         config.mainPage.append(View.createMainPage(user));
         Model.startTimer(user);
+    }
+
+    static movePurchasePage(user, num){
+        config.mainPage.querySelectorAll("#displayItems")[0].innerHTML='';
+        config.mainPage.querySelectorAll("#displayItems")[0].append(View.createPurchasePage(user, num));
     }
 }
 
