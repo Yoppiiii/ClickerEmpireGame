@@ -11,6 +11,8 @@ class User {
         this.money = money;
         this.clickCount = 0;
         this.incomePerClick = 25;
+        this.incomePerSec = 0;
+        this.stock = 0;
         this.items = items;
     }
 }
@@ -29,14 +31,6 @@ class Items {
 }
 
 class Model {
-
-    static updateMainPage(user){
-        user.clickCount++;
-        user.money += user.incomePerClick;
-        View.updateBurgerPage(user);
-        View.updateUserInfo(user);
-    }
-
     static startTimer(user){
         let days = user.days;
         setInterval(function(){
@@ -49,6 +43,54 @@ class Model {
                 View.updateUserInfo(user);
             }
         },1000)
+    }
+
+    static getTotalPrice(userItems, input){
+        let total = 0;
+        input = Number(input);
+        if(userItems.name == "ETF Stock"){
+            for(let i = 0; i < input; i++){
+                total += parseInt(userItems.price * Math.pow(1+userItems.perRate, i))
+            }
+            return total;
+        } else if(input > 0 && input % 1 == 0) return total += userItems.price * input;
+        else return total;
+    }
+
+    static puchaseItems(user, num, countInput){
+        if(countInput <= 0 || countInput % 1 != 0){
+            alert("Invalid Number");
+        } else if(this.getTotalPrice(user.items[num], countInput) > user.money){
+            alert("You don't have enough money.");
+        } else if(user.items[num].currentAmount + countInput > user.items[num].maxAmount && user.items[num].type != "investment"){
+            alert("You can't buy anymore");
+        } else {
+            user.money -= this.getTotalPrice(user.items[num], countInput);
+            user.items[num].currentAmount += Number(countInput);
+            if(user.items[num].name == "ETF Stock"){
+                user.stock += this.getTotalPrice(user.items[num], countInputt);
+                user.items[num].price = this.calculateEtfStockPrice(user.items[num], countInput);
+                this.updateUserIncome(user, user.items[num], countInput);
+            } else if(user.items[num].name == "ETF Bonds"){
+                user.stock += this.getTotalPrice(user.items[num], countInput);
+                this.updateUserIncome(user, user.items[num], countInput);
+            } else this.updateUserIncome(user, user.items[num], countInput);
+        }
+    }
+
+    static calculateEtfStockPrice(item, countInput){
+        return parseInt(item.price * Math.pow(1 + item.perRate, countInput));
+    }
+
+    static updateUserIncome(user, items, countInput){
+        countInput = Number(countInput);
+        if(items.type == "ability"){
+            user.incomePerClick += items.perMoney * countInput;
+        } else if(items.type == "investment"){
+            user.incoPerSec += user.stock * items.perRate;
+        } else if(items.type == "realState"){
+            user.incomePerSec += items.perMoney * countInput;
+        }
     }
 }
 
@@ -112,7 +154,7 @@ class View {
 
         let burgerStatus = container.querySelectorAll("#burger")[0];
         burgerStatus.addEventListener("click", function(){
-            Model.updateMainPage(user);
+            Controller.updateByClickBurger(user);
         })
 
         return container;
@@ -179,7 +221,7 @@ class View {
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h4>${user.items[num].name}</h4>
-                    <p>Max purchases: ${user.items[num].maxAmount}</p>
+                    <p>Max purchases: ${View.displayMaxPurchase(user.items[num].maxAmount)}</p>
                     <p>Price ¥${user.items[num].price}</p>
                     <p>Get ¥${View.displayItemIncome(user.items[num], user.items[num].type)}</p>
                 </div>
@@ -196,6 +238,26 @@ class View {
             </div>
         </div>
         `
+
+        let countInput = container.querySelectorAll("input")[0];
+        countInput.addEventListener("input", function(){
+            container.querySelectorAll("#totalPrice")[0].innerHTML=
+            `
+            total: ¥${Model.getTotalPrice(user.items[num], countInput.value)}
+            `
+        })
+
+        let backBtn = container.querySelectorAll("#back")[0];
+        backBtn.addEventListener("click", function(){
+            View.updateMainPage(user);
+        })
+
+        let purchaseBtn = container.querySelectorAll("#purchase")[0];
+        purchaseBtn.addEventListener("click", function(){
+            Model.puchaseItems(user, num, countInput.value);
+            View.updateMainPage(user);
+        })
+
         return container;
     }
 
@@ -203,6 +265,11 @@ class View {
         if(type == "ability") return item.perMoney + "/click";
         else if(type == "investment") return item.perRate + "/sec";
         else return item.perMoney + "/sec";
+    }
+
+    static displayMaxPurchase(maxAmount){
+        if(maxAmount == -1) return "∞";
+        else return maxAmount;
     }
 
     static updateBurgerPage(user){
@@ -215,6 +282,11 @@ class View {
         let userInfo = config.mainPage.querySelectorAll("#userInfo")[0];
         userInfo.innerHTML='';
         userInfo.append(View.createUserInfo(user));
+    }
+
+    static updateMainPage(user){
+        config.mainPage.innerHTML='';
+        config.mainPage.append(View.createMainPage(user));
     }
 }
 
@@ -254,6 +326,13 @@ class Controller {
         config.initialPage.classList.add("d-none");
         config.mainPage.append(View.createMainPage(user));
         Model.startTimer(user);
+    }
+
+    static updateByClickBurger(user){
+        user.clickCount++;
+        user.money += user.incomePerClick;
+        View.updateBurgerPage(user);
+        View.updateUserInfo(user);
     }
 
     static movePurchasePage(user, num){
