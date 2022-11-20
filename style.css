@@ -3,9 +3,8 @@ body {
     letter-spacing: 0.03em!important;
 }
 
-.bg-navy{
-    /* background-color: #3c5279; */
-    background-color: #4d6088;
+.bg-red{
+    background-color: rgb(138, 64, 64);
 }
 
 .hover {
@@ -25,6 +24,6 @@ body {
 }
 
 .selectItem:hover {
-    border: 2px solid steelblue;
+    border: 2px solid rgb(172, 83, 83);
     cursor: pointer;
 }
