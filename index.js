@@ -31,11 +31,11 @@ class Items {
 }
 
 class Model {
+    timer;
     static startTimer(user){
-        let days = user.days;
-        setInterval(function(){
-            days++;
-            user.days = days;
+        Model.timer = setInterval(function(){
+            user.days++;
+            user.money += user.incomePerSec;
             if(user.days % 365 == 0){
                 user.age++; 
                 View.updateUserInfo(user);
@@ -43,6 +43,11 @@ class Model {
                 View.updateUserInfo(user);
             }
         },1000)
+    }
+
+
+    static stopTimer(){
+        clearInterval(Model.timer)
     }
 
     static getTotalPrice(userItems, input){
@@ -68,7 +73,7 @@ class Model {
             user.money -= this.getTotalPrice(user.items[num], countInput);
             user.items[num].currentAmount += Number(countInput);
             if(user.items[num].name == "ETF Stock"){
-                user.stock += this.getTotalPrice(user.items[num], countInputt);
+                user.stock += this.getTotalPrice(user.items[num], countInput);
                 user.items[num].price = this.calculateEtfStockPrice(user.items[num], countInput);
                 this.updateUserIncome(user, user.items[num], countInput);
             } else if(user.items[num].name == "ETF Bonds"){
@@ -87,10 +92,36 @@ class Model {
         if(items.type == "ability"){
             user.incomePerClick += items.perMoney * countInput;
         } else if(items.type == "investment"){
-            user.incoPerSec += user.stock * items.perRate;
+            user.incomePerSec += user.stock * items.perRate;
         } else if(items.type == "realState"){
             user.incomePerSec += items.perMoney * countInput;
         }
+    }
+
+    static resetAllData(user){
+        if(window.confirm("Reset All Data?")){
+            let userName = user.name;
+            user = Controller.createUserAccount(userName);
+            Model.stopTimer();
+            View.updateMainPage(user);
+            Model.startTimer(user);
+        }
+    }
+
+    static getUserData(userName){
+        return JSON.parse(localStorage.getItem(userName));
+    }
+
+    static saveUserData(user){
+        localStorage.setItem(user.name, JSON.stringify(user));
+        alert("Saved your data. Please put the same name when you login.");
+    }
+
+    static initializePage(){
+        config.initialPage.classList.remove("d-none");
+        config.initialPage.innerHTML='';
+        config.mainPage.innerHTML='';
+        Controller.startGame();
     }
 }
 
@@ -107,7 +138,7 @@ class View {
                         <button type="submit" class="col-12 btn btn-primary" id="newGame">New</button>
                     </div>
                     <div class="col-6 pr-0">
-                        <button type="submit" class="col-12 btn btn-primary" id="login">Login</button>
+                        <button type="submit" class="col-12 btn btn-success" id="login">Login</button>
                     </div>
                 </div>
             </div>
@@ -128,13 +159,33 @@ class View {
                         </div>
                         <div class="bg-dark mt-2 p-1 overflow-auto flowHeight" id="displayItems">
                         </div>
+                        <div class="d-flex justify-content-end mt-2">
+                            <div class="border p-2 mr-2 hover" id="reset">
+                                <i class="fas fa-undo fa-2x text-white"></i>
+                            </div>
+                            <div class="border p-2 hover" id="save">
+                                <i class="fas fa-save fa-2x text-white"></i>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </div> 
             </div>
         `
         container.querySelectorAll("#burgerStatus")[0].append(View.createBugerStatus(user));
         container.querySelectorAll("#userInfo")[0].append(View.createUserInfo(user));
         container.querySelectorAll("#displayItems")[0].append(View.createItemPage(user));
+
+        let resetBtn = container.querySelectorAll("#reset")[0];
+        resetBtn.addEventListener("click", function(){
+            Model.resetAllData(user);
+        })
+
+        let saveBtn = container.querySelectorAll("#save")[0];
+        saveBtn.addEventListener("click", function(){
+            Model.saveUserData(user);
+            Model.stopTimer();
+            Model.initializePage();
+        })
 
         return container;
     }
@@ -298,9 +349,24 @@ class Controller {
             let userName = config.initialPage.querySelectorAll("input")[0].value;
             if(userName == ""){
                 alert("Please put your name");
-            } else{
+            } else {
                 let user = Controller.createUserAccount(userName);
                 Controller.moveInitialToMain(user);
+            }
+        })
+
+        let loginGameBtn = config.initialPage.querySelectorAll("#login")[0];
+        loginGameBtn.addEventListener("click", function(){
+            let userName = config.initialPage.querySelectorAll("input")[0].value;
+            if(userName == ""){
+                alert("Please put your name");
+            } else {
+                let user = Model.getUserData(userName);
+                if(user == null){
+                    alert("There is no data.");
+                } else {
+                    Controller.moveInitialToMain(user);
+                }
             }
         })
     }
@@ -319,7 +385,7 @@ class Controller {
             new Items("Hotel Skyscraper", "realState", 0, 5, 25000000, 0, 10000000000, "https://cdn.pixabay.com/photo/2012/05/07/18/03/skyscrapers-48853_960_720.png"),
             new Items("Bullet-Speed Sky Railway", "realState", 0, 1, 30000000000, 0, 10000000000000, "https://cdn.pixabay.com/photo/2013/07/13/10/21/train-157027_960_720.png")   
         ]
-        return new User(userName, 20, 0, 50000, itemsList);
+        return new User(userName, 20, 0, 5000000, itemsList);
     }
 
     static moveInitialToMain(user){
