@@ -385,7 +385,7 @@ class Controller {
             new Items("Hotel Skyscraper", "realState", 0, 5, 25000000, 0, 10000000000, "https://cdn.pixabay.com/photo/2012/05/07/18/03/skyscrapers-48853_960_720.png"),
             new Items("Bullet-Speed Sky Railway", "realState", 0, 1, 30000000000, 0, 10000000000000, "https://cdn.pixabay.com/photo/2013/07/13/10/21/train-157027_960_720.png")   
         ]
-        return new User(userName, 20, 0, 5000000, itemsList);
+        return new User(userName, 20, 0, 50000, itemsList);
     }
 
     static moveInitialToMain(user){
