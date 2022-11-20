@@ -151,7 +151,7 @@ class View {
         container.innerHTML=
         `
             <div class="vh-100 d-flex justify-content-center p-md-5 pb-5">
-                <div class="bg-navy d-flex p-2 text-white col-md-11 col-lg-10">
+                <div class="bg-red d-flex p-2 text-white col-md-11 col-lg-10">
                     <div class="col-4 bg-dark p-2" id="burgerStatus">
                     </div>
                     <div class="col-8">
@@ -194,7 +194,7 @@ class View {
         let container = document.createElement("div");
         container.innerHTML =
         `
-            <div class="text-center bg-navy">
+            <div class="text-center bg-red">
                 <h5>${user.clickCount} Burgers</h5>
                 <p>one click ¥25</p>
             </div>
@@ -238,7 +238,7 @@ class View {
         for(let i = 0; i < user.items.length; i++){
             container.innerHTML +=
             `
-                <div class="d-sm-flex align-items-center m-1 selectItem bg-navy" id="itemPage">
+                <div class="d-sm-flex align-items-center m-1 selectItem bg-red" id="itemPage">
                     <div class="d-none d-sm-block p-1 col-sm-3">
                         <img  src=${user.items[i].url} class="py-2 img-fluid">
                     </div>
@@ -268,7 +268,7 @@ class View {
         let container = document.createElement("div");
         container.innerHTML=
         `
-        <div class="p-2 m-1 bg-navy" id="purchasePage">
+        <div class="p-2 m-1 bg-red" id="purchasePage">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h4>${user.items[num].name}</h4>
