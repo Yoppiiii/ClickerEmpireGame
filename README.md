@@ -2,7 +2,7 @@
 RecursionのProject3「ClickerEmpireGame」で作成したアプリです。
 <br>
 # Description
-仕事や投資、不動産等でお金を稼ぐ「Clicker Empire Game」というシミュレーションゲームをです。
+仕事や投資、不動産等でお金を稼ぐ「Clicker Empire Game」というシミュレーションゲームです。
 <br>
 ゲームの目的は、一攫千金を目指し、街に帝国を築くことです。
 <br>
